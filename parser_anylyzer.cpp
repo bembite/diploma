@@ -11,6 +11,7 @@
 
 
 using namespace std;
+int step_number=1;
 
 
 void print_vector(vector<vector<float>> &current_step);
@@ -18,6 +19,8 @@ void add_one_neuron(vector<float> &neuron, vector<vector<float>> &current_step);
 void read_line_and_parse(vector<float> &current_neuron, vector<vector<float>> &current_step, string line);
 void open_dynamics(vector<float> &current_neuron, vector<vector<float>> &current_step, string filename);
 void standart_deviation(vector<vector<float>> &current_step);
+void write_result(float result1, float result2);
+
 
 
 
@@ -43,6 +46,7 @@ void add_one_neuron(vector<float> &neuron, vector<vector<float>> &current_step)
 }
 void read_line_and_parse(vector<float> &current_neuron, vector<vector<float>> &current_step, string line)
 {
+	//cout<<"parsing string"<<'\n';
 	float s_float;
 	istringstream buf(line);
 	istream_iterator<string> beg(buf), end;
@@ -61,14 +65,10 @@ void open_dynamics(vector<float> &current_neuron, vector<vector<float>> &current
 	string line;
   	ifstream myfile (filename);
   	if (myfile.is_open())
-  	{
+  	{   
 	    while ( getline (myfile,line) )
-	    {
-			if(isdigit(line.front()))
-			{
-				read_line_and_parse(current_neuron,current_step,line);
-			}
-			else if (line.front()==' '||line.empty())
+	    {   //cout<<line.front()<<'\n';
+			if (line.front()==' '||line.empty()||line.front()=='\t')
 			{
 				cout<<"step"<<"\n";
 				standart_deviation(current_step);
@@ -77,8 +77,9 @@ void open_dynamics(vector<float> &current_neuron, vector<vector<float>> &current
 			}
 			else
 			{
-				continue;
+				read_line_and_parse(current_neuron,current_step,line);
 			}
+			
 	    }
     myfile.close();
   	}
@@ -86,7 +87,7 @@ void open_dynamics(vector<float> &current_neuron, vector<vector<float>> &current
 	{cout << "Unable to open file"; }
 
 }
-void standart_deviation(vector<vector<float>> &current_step, int &step_number)
+void standart_deviation(vector<vector<float>> &current_step)
 {
 	//average
 	float sum1=0;
@@ -118,16 +119,28 @@ void standart_deviation(vector<vector<float>> &current_step, int &step_number)
     float result2=sqrt(dif_sum2/current_step.size());
     cout<<"result1="<<result1<<'\n';
     cout<<"result2="<<result2<<'\n';
-	step_number++;
+	if(isnan(result1)||isnan(result2))
+	{cout<<"error bad data detected"<<'\n';}
+	else
+	{
 	//write result to file
+	write_result(result1,result2);
+	step_number++;
+	}
+}
+void write_result(float result1, float result2)
+{
+  ofstream myfile;
+  myfile.open ("result.txt",ios::app);
+  myfile<< step_number <<" "<< result1<<" "<<result2<<"\n";
+  myfile.close();
 }
 //void string(string s)
 int main()
 {	
 	vector<vector<float>> current_step;
 	vector<float> current_neuron;
-	int step_number=1;
-	string filein="dynamics.txt";
+	string filein="phase.txt";
     open_dynamics(current_neuron,current_step,filein);
 	//print_vector(current_step);
     
